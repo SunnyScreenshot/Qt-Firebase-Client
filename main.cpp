@@ -1,6 +1,7 @@
 #include "widget.h"
-
 #include <QApplication>
+//#include "analytics.h"
+#include "firebase/analytics.h"
 
 int main(int argc, char *argv[])
 {

@@ -13,9 +13,10 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_BINARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bin") # qtcreator + msvc 可执行文件的输出目录
+set(CMAKE_BINARY_DIR "${EXECUTABLE_OUTPUT_PATH}")             # visual studio 2022 可执行的输出目录
 
-set(qt_moduls Widgets) # Network Multimedia WebSockets
+set(qt_moduls Widgets Network) # Network Multimedia WebSockets
 set(qt_version_moduls)
 foreach(it ${qt_moduls})
     list(APPEND qt_version_moduls Qt${QT_VERSION_MAJOR}::${it})
@@ -51,16 +52,25 @@ message("--->" ${architecture_bit})
 #***************************************************使用第三方库 firebase *.lib 开始**********************************************
 # 设置 Firebase 相关的目录
 set(firebase_lib_dir "${CMAKE_CURRENT_SOURCE_DIR}/tripartite/firebase/libs/windows/VS2019/MD/${architecture_bit}/Release")
-set(firebase_include_dir "${CMAKE_CURRENT_SOURCE_DIR}/tripartite/firebase/include") # 当有多个的时候，请使用 foreach + include_directories 加入
+#set(firebase_include_dir "${CMAKE_CURRENT_SOURCE_DIR}/tripartite/firebase/include") # 当有多个的时候，请使用 foreach + include_directories 加入
 set(firebase_lib_copy_dir ${CMAKE_BINARY_DIR})
 
 # 添加头文件目录
-include_directories(${firebase_include_dir})
-include_directories("${firebase_include_dir}/firebase")
-include_directories("${firebase_include_dir}/google_play_services")
+#include_directories(${firebase_include_dir})
+#include_directories("${firebase_include_dir}/firebase")
+#include_directories("${firebase_include_dir}/google_play_services")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/tripartite/firebase/include")
+#include_directories("${firebase_include_dir}/firebase")
+#include_directories("${firebase_include_dir}/google_play_services")
 
 # 拷贝整套的 lib 和 dll
-file(GLOB firebase_lib_flies "${firebase_lib_dir}/*.lib")
+#    file(GLOB firebase_lib_flies "${firebase_lib_dir}/*.lib")  # 不必，所有模块
+
+set(firebase_lib_flies "${firebase_lib_dir}/firebase_analytics.lib"
+                       "${firebase_lib_dir}/firebase_app.lib"
+                   )
+
+
 file(COPY ${firebase_lib_flies} DESTINATION ${firebase_lib_copy_dir})
 
 set(firebase_flies_names "")
@@ -70,12 +80,12 @@ foreach(it ${firebase_lib_flies})
     set(firebase_flies_names ${firebase_flies_names} "${firebase_lib_copy_dir}/${FILE_NAME}")
 endforeach()
 
-#foreach(it ${firebase_flies_names})
-#    message("firebase_flies_names:" ${it})
-#endforeach()
-#foreach(it ${firebase_lib_flies})
-#    message("firebase_lib_flies:" ${it})
-#endforeach()
+foreach(it ${firebase_flies_names})
+    message("firebase_flies_names:" ${it})
+endforeach()
+foreach(it ${firebase_lib_flies})
+    message("firebase_lib_flies:" ${it})
+endforeach()
 #foreach(it ${firebase_lib_dir})
 #    message("firebase_lib_dir:" ${it})
 #endforeach()
@@ -87,7 +97,11 @@ add_executable(${project_name}
     ${PROJECT_SOURCES}
 )
 
-target_link_libraries(${project_name} PRIVATE ${qt_version_moduls} ${firebase_flies_names})
+target_link_libraries(${project_name} PRIVATE ${qt_version_moduls}
+    "${firebase_lib_dir}/firebase_analytics.lib"
+    "${firebase_lib_dir}/firebase_app.lib"
+#    ${firebase_flies_names}
+)
 
 set_target_properties(${project_name} PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

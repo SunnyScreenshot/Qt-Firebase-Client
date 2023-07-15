@@ -37,3 +37,8 @@
 
 
 
+
+
+
+
+1. 在创建 [firebase ](https://console.firebase.google.com/?hl=zh-cn) 创建项目
